@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kulikap Waterfall — Canyoneering Reservation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep: #0a1628;
+    --midnight: #0f2140;
+    --teal: #0e7c6e;
+    --teal-light: #14a692;
+    --aqua: #4ecdc4;
+    --mist: #a8e6df;
+    --cream: #f5f0e8;
+    --gold: #d4a843;
+    --text: #e8f4f2;
+    --text-dim: #7ba8a2;
+    --white: #ffffff;
+    --danger: #e05555;
+    --shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 0%, rgba(14,124,110,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 100%, rgba(78,205,196,0.10) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px 40px;
+    overflow: hidden;
+  }
+
+  .hero-waterfall {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      linear-gradient(180deg, rgba(10,22,40,0.3) 0%, rgba(10,22,40,0.7) 100%),
+      url('static/img/kulikap.jpg') center/cover no-repeat;
+  }
+
+  .hero-overlay-lines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(78,205,196,0.03) 40px,
+      rgba(78,205,196,0.03) 41px
+    );
+    z-index: 1;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 760px; }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--aqua);
+    border: 1px solid rgba(78,205,196,0.4);
+    padding: 6px 18px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 900;
+    line-height: 0.95;
+    color: var(--white);
+    animation: fadeDown 0.8s 0.15s ease both;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--aqua);
+  }
+
+  .hero-sub {
+    margin-top: 22px;
+    font-size: 17px;
+    color: var(--mist);
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    animation: fadeDown 0.8s 0.3s ease both;
+  }
+
+  .scroll-cta {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--aqua);
+    cursor: pointer;
+    animation: fadeDown 0.8s 0.45s ease both;
+    transition: opacity 0.2s;
+  }
+  .scroll-cta:hover { opacity: 0.7; }
+  .scroll-cta .line { width: 40px; height: 1px; background: var(--aqua); }
+
+  /* STATS ROW */
+  .stats-row {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(78,205,196,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 60px;
+    animation: fadeUp 0.8s 0.5s ease both;
+  }
+  .stat {
+    flex: 1;
+    padding: 18px 28px;
+    text-align: center;
+    border-right: 1px solid rgba(78,205,196,0.15);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--aqua);
+  }
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 24px 120px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .section-title em { color: var(--aqua); font-style: italic; }
+  .section-sub {
+    font-size: 15px;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+
+  /* PACKAGES */
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 80px;
+  }
+
+  .pkg-card {
+    background: rgba(15,33,64,0.8);
+    border: 1px solid rgba(78,205,196,0.15);
+    border-radius: 8px;
+    padding: 32px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pkg-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--teal-light);
+    transition: height 0.3s ease;
+  }
+  .pkg-card:hover::before, .pkg-card.selected::before { height: 100%; }
+  .pkg-card:hover {
+    border-color: rgba(78,205,196,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+  .pkg-card.selected {
+    border-color: var(--teal-light);
+    background: rgba(14,124,110,0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(14,124,110,0.3);
+  }
+
+  .pkg-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .pkg-card.featured .pkg-badge { color: var(--aqua); }
+
+  .pkg-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .pkg-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .pkg-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 26px;
+    color: var(--aqua);
+    margin-bottom: 4px;
+  }
+  .pkg-price span { font-size: 13px; color: var(--text-dim); }
+
+  .pkg-features {
+    list-style: none;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pkg-features li {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pkg-features li::before {
+    content: '↗';
+    color: var(--teal-light);
+    font-size: 12px;
+  }
+  .pkg-card.selected .pkg-features li { color: var(--mist); }
+
+  .featured-tag {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--teal);
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  /* ===== FORM ===== */
+  .form-container {
+    background: rgba(15,33,64,0.6);
+    border: 1px solid rgba(78,205,196,0.15);
+    border-radius: 12px;
+    padding: 48px;
+    backdrop-filter: blur(10px);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .form-full { grid-column: 1 / -1; }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  input, select, textarea {
+    background: rgba(10,22,40,0.8);
+    border: 1px solid rgba(78,205,196,0.2);
+    border-radius: 6px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    transition: all 0.2s;
+    width: 100%;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--teal-light);
+    box-shadow: 0 0 0 3px rgba(14,166,146,0.15);
+  }
+  input::placeholder, textarea::placeholder { color: rgba(123,168,162,0.4); }
+  select option { background: var(--midnight); color: var(--text); }
+
+  textarea { resize: vertical; min-height: 100px; }
+
+  /* PESERTA COUNT */
+  .counter-group {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid rgba(78,205,196,0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(10,22,40,0.8);
+  }
+  .counter-btn {
+    background: rgba(14,124,110,0.3);
+    border: none;
+    color: var(--aqua);
+    font-size: 22px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .counter-btn:hover { background: rgba(14,124,110,0.6); }
+  .counter-val {
+    flex: 1;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    color: var(--white);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+  }
+
+  /* ADD-ONS */
+  .addons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .addon-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(78,205,196,0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .addon-item:hover { border-color: rgba(78,205,196,0.4); }
+  .addon-item.active {
+    border-color: var(--teal-light);
+    background: rgba(14,124,110,0.15);
+  }
+  .addon-item input[type=checkbox] { display: none; }
+  .addon-check {
+    width: 18px; height: 18px;
+    border: 1.5px solid rgba(78,205,196,0.4);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--aqua);
+    transition: all 0.2s;
+  }
+  .addon-item.active .addon-check {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--white);
+  }
+  .addon-info { flex: 1; }
+  .addon-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .addon-price { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--aqua); margin-top: 2px; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(78,205,196,0.2), transparent);
+    margin: 36px 0;
+  }
+
+  /* RINGKASAN */
+  .summary-box {
+    background: rgba(10,22,40,0.9);
+    border: 1px solid rgba(78,205,196,0.25);
+    border-radius: 8px;
+    padding: 28px;
+  }
+  .summary-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--aqua);
+    margin-bottom: 20px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(78,205,196,0.08);
+  }
+  .summary-row:last-of-type { border-bottom: none; }
+  .summary-row .val { color: var(--text); font-weight: 500; }
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(78,205,196,0.2);
+  }
+  .summary-total .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .summary-total .total-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--aqua);
+  }
+
+  /* PAYMENT METHOD */
+  .payment-opts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .pay-opt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 16px;
+    border: 1px solid rgba(78,205,196,0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .pay-opt:hover { border-color: rgba(78,205,196,0.4); }
+  .pay-opt.selected {
+    border-color: var(--teal-light);
+    background: rgba(14,124,110,0.2);
+    box-shadow: 0 0 0 3px rgba(14,166,146,0.1);
+  }
+  .pay-icon { font-size: 28px; }
+  .pay-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .pay-desc { font-size: 11px; color: var(--text-dim); }
+
+  /* SUBMIT */
+  .submit-area {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+
+  .btn-submit {
+    flex: 1;
+    min-width: 220px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 18px 40px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s;
+  }
+  .btn-submit:hover::after { background: rgba(255,255,255,0.08); }
+  .btn-submit:active { transform: scale(0.98); }
+
+  .btn-whatsapp {
+    background: rgba(37,211,102,0.15);
+    border: 1px solid rgba(37,211,102,0.4);
+    border-radius: 8px;
+    padding: 17px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: #25d366;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-whatsapp:hover {
+    background: rgba(37,211,102,0.25);
+    border-color: rgba(37,211,102,0.6);
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--teal);
+    color: var(--white);
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999;
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    padding: 20px;
+  }
+  .modal-bg.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--midnight);
+    border: 1px solid rgba(78,205,196,0.3);
+    border-radius: 12px;
+    padding: 48px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .modal-bg.open .modal { transform: scale(1); }
+  .modal-icon { font-size: 56px; margin-bottom: 20px; }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .modal p { font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 8px; }
+  .modal .booking-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    color: var(--aqua);
+    background: rgba(78,205,196,0.1);
+    padding: 12px 24px;
+    border-radius: 6px;
+    margin: 20px 0;
+    letter-spacing: 4px;
+  }
+  .modal-close {
+    background: var(--teal);
+    border: none;
+    border-radius: 6px;
+    color: var(--white);
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: opacity 0.2s;
+  }
+  .modal-close:hover { opacity: 0.85; }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: linear-gradient(180deg, rgba(10,22,40,0.9) 0%, transparent 100%);
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--white);
+    letter-spacing: -0.5px;
+  }
+  .nav-logo em { color: var(--aqua); font-style: italic; }
+  .nav-contact {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--aqua);
+  }
+
+  /* SECTION divider visual */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .section-divider .line { flex: 1; height: 1px; background: rgba(78,205,196,0.15); }
+  .section-divider .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal-light);
+  }
+
+  /* Error */
+  .error-msg {
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: 4px;
+    display: none;
+  }
+  .form-group.error input,
+  .form-group.error select {
+    border-color: var(--danger);
+  }
+  .form-group.error .error-msg { display: block; }
+
+  @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-full { grid-column: 1; }
+    .form-container { padding: 28px 20px; }
+    .stats-row { flex-direction: column; }
+    .stat { border-right: none; border-bottom: 1px solid rgba(78,205,196,0.15); }
+    .submit-area { flex-direction: column; }
+    .btn-submit, .btn-whatsapp { width: 100%; justify-content: center; }
+    .nav { padding: 16px 20px; }
+  }
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    padding: 20px;
+  }
+  .modal-bg.open { opacity: 1; pointer-events: all; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">Kulikap <em>Falls</em></div>
+  <div class="nav-links">
+    {% if user %}
+      <span>Halo, {{ user.full_name }}</span>
+      {% if user.role == 'admin' %}
+        <a href="/admin" style="color: var(--gold); margin-left:15px;">Dashboard Admin</a>
+      {% endif %}
+      <a href="/logout" style="margin-left:15px; color: var(--danger);">Logout</a>
+    {% else %}
+    <button onclick="openAuthModal()" style="background:var(--teal); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Login</button>    {% endif %}
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-waterfall"></div>
+  <div class="hero-overlay-lines"></div>
+  <div class="hero-content">
+    <div class="badge">⬡ Sumatera Utara · Canyoneering Adventure</div>
+    <h1>Air Terjun<br><em>Kulikap</em></h1>
+    <p class="hero-sub">Rasakan sensasi canyoneering di salah satu air terjun<br>tersembunyi paling indah di Sumatera Utara</p>
+    <div class="scroll-cta" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">
+      <span class="line"></span>
+      BOOKING SEKARANG
+      <span class="line"></span>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">12m</div><div class="stat-label">Tinggi Air Terjun</div></div>
+    <div class="stat"><div class="stat-num">4.9★</div><div class="stat-label">Rating Peserta</div></div>
+    <div class="stat"><div class="stat-num">500+</div><div class="stat-label">Trip Selesai</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Safety Record</div></div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- PAKET TRIP -->
+  <div class="section-divider">
+    <div class="line"></div><div class="dot"></div><div class="line"></div>
+  </div>
+  <h2 class="section-title">Pilih <em>Paket Trip</em></h2>
+  <p class="section-sub">Sesuaikan pengalaman dengan kebutuhan dan anggaran kamu</p>
+
+  <div class="packages-grid">
+
+    {% for pkg in packages %}
+    
+    <div class="pkg-card {% if pkg.featured %}featured{% endif %}"
+         data-pkg="{{ pkg.package_code }}"
+         data-price="{{ pkg.price }}"
+         onclick="selectPackage(this)">
+    
+        {% if pkg.featured %}
+        <div class="featured-tag">TERPOPULER</div>
+        {% endif %}
+    
+        <div class="pkg-badge">
+          — {{ pkg.badge }}
+        </div>
+    
+        <div class="pkg-name">
+          {{ pkg.package_name }}
+        </div>
+    
+        <p class="pkg-desc">
+          {{ pkg.description }}
+        </p>
+    
+        <div class="pkg-price">
+          Rp {{ "{:,.0f}".format(pkg.price).replace(",", ".") }}
+          <span>/orang</span>
+        </div>
+    
+        <ul class="pkg-features">
+    
+          {% for feature in pkg.features %}
+          <li>{{ feature }}</li>
+          {% endfor %}
+    
+        </ul>
+    
+    </div>
+    
+    {% endfor %}
+    
+    </div>
+
+  <!-- FORM RESERVASI -->
+  <div class="section-divider">
+    <div class="line"></div><div class="dot"></div><div class="line"></div>
+  </div>
+  <h2 class="section-title">Form <em>Reservasi</em></h2>
+  <p class="section-sub">Isi data lengkap untuk memastikan trip kamu terkonfirmasi</p>
+
+  {% if user %}
+  <div class="form-container">
+    <div class="form-grid">
+
+      <div class="form-group" id="grp-nama">
+        <label>Nama Lengkap</label>
+        <input type="text" id="nama" placeholder="Nama sesuai KTP" />
+        <span class="error-msg">Nama wajib diisi</span>
+      </div>
+
+      <div class="form-group" id="grp-phone">
+        <label>Nomor WhatsApp</label>
+        <input type="tel" id="phone" placeholder="08xx-xxxx-xxxx" />
+        <span class="error-msg">Nomor WhatsApp wajib diisi</span>
+      </div>
+
+      <div class="form-group" id="grp-email">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="email@kamu.com" />
+        <span class="error-msg">Email tidak valid</span>
+      </div>
+
+      <div class="form-group" id="grp-kota">
+        <label>Kota Asal</label>
+        <select id="kota">
+          <option value="">-- Pilih kota --</option>
+          <option>Medan</option>
+          <option>Binjai</option>
+          <option>Deli Serdang</option>
+          <option>Tebing Tinggi</option>
+          <option>Pematangsiantar</option>
+          <option>Luar Sumatera Utara</option>
+        </select>
+        <span class="error-msg">Pilih kota asal</span>
+      </div>
+
+      <div class="form-group" id="grp-tanggal">
+        <label>Tanggal Trip</label>
+        <input type="date" id="tanggal" />
+        <span class="error-msg">Pilih tanggal trip</span>
+      </div>
+
+      <div class="form-group">
+        <label>Jumlah Peserta</label>
+        <div class="counter-group">
+          <button class="counter-btn" onclick="changeCount(-1)">−</button>
+          <span class="counter-val" id="peserta-val">2</span>
+          <button class="counter-btn" onclick="changeCount(1)">+</button>
+        </div>
+      </div>
+
+      <div class="form-group form-full" id="grp-pkg">
+        <label>Paket Dipilih</label>
+        <select id="paket-select" onchange="selectPackageByVal(this.value)">
+          <option value="">-- Pilih paket --</option>
+        
+          {% for pkg in packages %}
+          <option value="{{ pkg.package_code }}:{{ pkg.price }}">
+            {{ pkg.package_name }} —
+            Rp {{ "{:,.0f}".format(pkg.price).replace(",", ".") }}/orang
+          </option>
+          {% endfor %}
+        
+        </select>
+        <span class="error-msg">Pilih paket trip</span>
+      </div>
+
+      <div class="form-group form-full">
+        <label>Add-on Tambahan</label>
+        <div class="addons-grid">
+          <div class="addon-item" onclick="toggleAddon(this)" data-price="75000">
+            <input type="checkbox">
+            <div class="addon-check">✓</div>
+            <div class="addon-info">
+              <div class="addon-name">📸 Foto Profesional</div>
+              <div class="addon-price">+Rp 75.000</div>
+            </div>
+          </div>
+          <div class="addon-item" onclick="toggleAddon(this)" data-price="100000">
+            <input type="checkbox">
+            <div class="addon-check">✓</div>
+            <div class="addon-info">
+              <div class="addon-name">🎬 Video Cinematic</div>
+              <div class="addon-price">+Rp 100.000</div>
+            </div>
+          </div>
+          <div class="addon-item" onclick="toggleAddon(this)" data-price="50000">
+            <input type="checkbox">
+            <div class="addon-check">✓</div>
+            <div class="addon-info">
+              <div class="addon-name">🍱 Makan Siang</div>
+              <div class="addon-price">+Rp 50.000</div>
+            </div>
+          </div>
+          <div class="addon-item" onclick="toggleAddon(this)" data-price="120000">
+            <input type="checkbox">
+            <div class="addon-check">✓</div>
+            <div class="addon-info">
+              <div class="addon-name">🚐 Antar-Jemput Medan</div>
+              <div class="addon-price">+Rp 120.000</div>
+            </div>
+          </div>
+          <div class="addon-item" onclick="toggleAddon(this)" data-price="35000">
+            <input type="checkbox">
+            <div class="addon-check">✓</div>
+            <div class="addon-info">
+              <div class="addon-name">🎽 Kaos Souvenir</div>
+              <div class="addon-price">+Rp 35.000</div>
+            </div>
+          </div>
+          <div class="addon-item" onclick="toggleAddon(this)" data-price="80000">
+            <input type="checkbox">
+            <div class="addon-check">✓</div>
+            <div class="addon-info">
+              <div class="addon-name">⛺ Camping Overnight</div>
+              <div class="addon-price">+Rp 80.000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group form-full">
+        <label>Catatan / Permintaan Khusus</label>
+        <textarea id="catatan" placeholder="Contoh: ada peserta lansia, alergi makanan tertentu, dll..."></textarea>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- RINGKASAN -->
+    <div class="summary-box">
+      <div class="summary-title">▸ Ringkasan Pesanan</div>
+      <div class="summary-row"><span>Paket dipilih</span><span class="val" id="sum-pkg">Belum dipilih</span></div>
+      <div class="summary-row"><span>Jumlah peserta</span><span class="val" id="sum-peserta">2 orang</span></div>
+      <div class="summary-row"><span>Harga per orang</span><span class="val" id="sum-harga">—</span></div>
+      <div class="summary-row"><span>Add-on</span><span class="val" id="sum-addon">Rp 0</span></div>
+      <div class="summary-total">
+        <span class="label">Total Pembayaran</span>
+        <span class="total-price" id="sum-total">Rp 0</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- METODE PEMBAYARAN -->
+    <div class="form-group form-full" id="grp-payment">
+      <label>Metode Pembayaran</label>
+      <div class="payment-opts">
+        <div class="pay-opt" onclick="selectPayment(this,'transfer')" data-method="transfer">
+          <div class="pay-icon">🏦</div>
+          <div class="pay-name">Transfer Bank</div>
+          <div class="pay-desc">BCA / BRI / Mandiri</div>
+        </div>
+        <div class="pay-opt" onclick="selectPayment(this,'qris')" data-method="qris">
+          <div class="pay-icon">📱</div>
+          <div class="pay-name">QRIS</div>
+          <div class="pay-desc">GoPay / OVO / Dana</div>
+        </div>
+        <div class="pay-opt" onclick="selectPayment(this,'dp')" data-method="dp">
+          <div class="pay-icon">💳</div>
+          <div class="pay-name">DP 50%</div>
+          <div class="pay-desc">Bayar separuh dulu</div>
+        </div>
+        <div class="pay-opt" onclick="selectPayment(this,'cash')" data-method="cash">
+          <div class="pay-icon">💵</div>
+          <div class="pay-name">Cash di Lokasi</div>
+          <div class="pay-desc">Bayar saat hari-H</div>
+        </div>
+      </div>
+      <span class="error-msg" id="pay-err" style="display:none">Pilih metode pembayaran</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="submit-area">
+      <button class="btn-submit" onclick="submitForm()">
+        ✦ Konfirmasi Reservasi
+      </button>
+      <button class="btn-whatsapp" onclick="waOrder()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+    </div>
+  </div>
+  {% else %}
+  <div class="form-container" style="text-align: center;">
+    <h3>Siap untuk berpetualang?</h3>
+    <p>Silahkan login terlebih dahulu untuk melakukan reservasi.</p>
+    <button class="btn-submit" onclick="openAuthModal()" style="margin-top:20px">Login Sekarang</button>  </div>
+{% endif %}
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL SUCCESS -->
+<!-- MODAL AUTH (LOGIN & REGISTER) -->
+<div id="auth-modal" class="modal-bg">
+  <div class="modal" style="max-width: 400px;">
+    
+    <!-- Bagian Login -->
+    <div id="login-form">
+      <h2>Selamat Datang</h2>
+      <p>Silahkan login untuk reservasi</p>
+      <div class="form-group" style="margin-top:20px">
+        <input type="text" id="l-user" placeholder="Username" style="margin-bottom:10px">
+        <input type="password" id="l-pass" placeholder="Password">
+        <button class="btn-submit" onclick="doLogin()" style="margin-top:20px; width:100%">Masuk</button>
+        <p style="margin-top:15px; font-size:13px; color:var(--text-dim)">
+          Belum punya akun? <a href="#" onclick="toggleAuth()" style="color:var(--aqua)">Daftar Sekarang</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Bagian Register (Sembunyi secara default) -->
+    <div id="register-form" style="display:none">
+      <h2>Buat Akun</h2>
+      <p>Lengkapi data diri Anda</p>
+      <div class="form-group" style="margin-top:20px; text-align: left;">
+        <label>Nama Lengkap</label>
+        <input type="text" id="r-name" placeholder="Contoh: Budi Santoso" style="margin-bottom:10px">
+        
+        <label>Username</label>
+        <input type="text" id="r-user" placeholder="Untuk login" style="margin-bottom:10px">
+        
+        <label>Email</label>
+        <input type="email" id="r-email" placeholder="email@gmail.com" style="margin-bottom:10px">
+        
+        <label>No. WhatsApp</label>
+        <input type="tel" id="r-phone" placeholder="0812..." style="margin-bottom:10px">
+        
+        <label>Password</label>
+        <input type="password" id="r-pass" placeholder="Minimal 6 karakter">
+        
+        <button class="btn-submit" onclick="doRegister()" style="margin-top:20px; width:100%">Daftar Akun</button>
+        <p style="margin-top:15px; font-size:13px; color:var(--text-dim); text-align: center;">
+          Sudah punya akun? <a href="#" onclick="toggleAuth()" style="color:var(--aqua)">Login di sini</a>
+        </p>
+      </div>
+    </div>
+
+    <button class="modal-close" onclick="closeAuthModal()" style="background:none; color:gray">Tutup</button>
+  </div>
+</div>
+<!-- MODAL SUCCESS (Tambahkan ini lagi) -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <h2>Reservasi Berhasil!</h2>
+    <p>Terima kasih! Reservasi kamu sudah kami terima. Tim kami akan menghubungi dalam 1×24 jam.</p>
+    <div class="booking-code" id="booking-code">KLK-0000</div>
+    <p style="font-size:13px">Simpan kode booking ini sebagai bukti reservasi kamu</p>
+    <button class="modal-close" onclick="closeModal()">Tutup & Simpan Kode</button>
+  </div>
+</div>
+<script>
+  // ========== STATE ==========
+  let state = {
+    pkgName: '',
+    pkgPrice: 0,
+    peserta: 2,
+    addons: 0,
+    payment: ''
+  };
+
+  // ========== SET MIN DATE ==========
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('tanggal').min = tomorrow.toISOString().split('T')[0];
+
+  // ========== PACKAGES ==========
+  function selectPackage(card) {
+    document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.pkgName = card.dataset.pkg;
+    state.pkgPrice = parseInt(card.dataset.price);
+
+    const map = { basic: 'basic:285000', adventure: 'adventure:450000', private: 'private:750000' };
+    document.getElementById('paket-select').value = map[state.pkgName];
+    removeError('grp-pkg');
+    updateSummary();
+  }
+
+  function selectPackageByVal(val) {
+    if (!val) return;
+    const [pkg, price] = val.split(':');
+    state.pkgName = pkg;
+    state.pkgPrice = parseInt(price);
+    document.querySelectorAll('.pkg-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.pkg === pkg);
+    });
+    removeError('grp-pkg');
+    updateSummary();
+  }
+
+  // ========== COUNTER ==========
+  function changeCount(delta) {
+    state.peserta = Math.max(1, Math.min(30, state.peserta + delta));
+    document.getElementById('peserta-val').textContent = state.peserta;
+    updateSummary();
+  }
+
+  // ========== ADDONS ==========
+  function toggleAddon(el) {
+    el.classList.toggle('active');
+    const price = parseInt(el.dataset.price);
+    if (el.classList.contains('active')) {
+      state.addons += price;
+    } else {
+      state.addons -= price;
+    }
+    updateSummary();
+  }
+
+  // ========== PAYMENT ==========
+  function selectPayment(el, method) {
+    document.querySelectorAll('.pay-opt').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    state.payment = method;
+    document.getElementById('pay-err').style.display = 'none';
+  }
+
+  // ========== SUMMARY ==========
+  function fmt(n) {
+    return 'Rp ' + n.toLocaleString('id-ID');
+  }
+
+  function updateSummary() {
+    const pkgLabels = { basic: 'Basic Canyon', adventure: 'Adventure Pack', private: 'Private Tour' };
+    document.getElementById('sum-pkg').textContent = state.pkgName ? pkgLabels[state.pkgName] : 'Belum dipilih';
+    document.getElementById('sum-peserta').textContent = state.peserta + ' orang';
+    document.getElementById('sum-harga').textContent = state.pkgPrice ? fmt(state.pkgPrice) : '—';
+    document.getElementById('sum-addon').textContent = fmt(state.addons * state.peserta);
+    const total = (state.pkgPrice * state.peserta) + (state.addons * state.peserta);
+    document.getElementById('sum-total').textContent = fmt(total);
+  }
+
+  // ========== VALIDATION ==========
+  function setError(id) { document.getElementById(id).classList.add('error'); }
+  function removeError(id) { document.getElementById(id).classList.remove('error'); }
+
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function submitForm() {
+  let valid = true;
+
+  const nama = document.getElementById('nama').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const kota = document.getElementById('kota').value;
+  const tanggal = document.getElementById('tanggal').value;
+
+  if (!nama) { setError('grp-nama'); valid = false; } else removeError('grp-nama');
+  if (!phone) { setError('grp-phone'); valid = false; } else removeError('grp-phone');
+  if (!email || !validateEmail(email)) { setError('grp-email'); valid = false; } else removeError('grp-email');
+  if (!kota) { setError('grp-kota'); valid = false; } else removeError('grp-kota');
+  if (!tanggal) { setError('grp-tanggal'); valid = false; } else removeError('grp-tanggal');
+  if (!state.pkgName) { setError('grp-pkg'); valid = false; } else removeError('grp-pkg');
+
+  if (!state.payment) {
+    document.getElementById('pay-err').style.display = 'block';
+    valid = false;
+  }
+
+  if (!valid) {
+    showToast('⚠️ Mohon lengkapi data', true);
+    return;
+  }
+
+  const code = 'KLK-' + Math.floor(1000 + Math.random() * 9000);
+  const total = (state.pkgPrice * state.peserta) + (state.addons * state.peserta);
+
+  fetch("/api/reservations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      booking_code: code,
+      kota: kota,
+      tanggal_trip: tanggal,
+      paket: state.pkgName,
+      jumlah_peserta: state.peserta,
+      addons: (state.addons * state.peserta),
+      total_pembayaran: total,
+      catatan: document.getElementById("catatan").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      document.getElementById('booking-code').textContent = code;
+      document.getElementById('modal-bg').classList.add('open');
+    } else {
+      // Tampilkan error spesifik dari database
+      showToast("❌ Gagal: " + data.message, true);
+    }
+  })
+  .catch(err => {
+    showToast("❌ Kesalahan Server", true);
+  });
+}
+
+
+    // Generate booking code
+
+
+  function waOrder() {
+    const nama = document.getElementById('nama').value || 'Belum diisi';
+    const tanggal = document.getElementById('tanggal').value || '—';
+    const pkgLabels = { basic: 'Basic Canyon', adventure: 'Adventure Pack', private: 'Private Tour' };
+    const pkg = pkgLabels[state.pkgName] || 'Belum dipilih';
+    const total = (state.pkgPrice * state.peserta) + (state.addons * state.peserta);
+
+    const msg = encodeURIComponent(
+      `Halo Kulikap Falls! 👋\n\nSaya ingin booking trip canyoneering:\n\n` +
+      `📋 Nama: ${nama}\n📦 Paket: ${pkg}\n👥 Peserta: ${state.peserta} orang\n📅 Tanggal: ${tanggal}\n💰 Total: ${fmt(total)}\n\nMohon konfirmasinya, terima kasih!`
+    );
+    window.open(`https://wa.me/6282276870757?text=${msg}`, '_blank');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-bg').classList.remove('open');
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = isError ? '#e05555' : 'var(--teal)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+  function openLoginModal() { document.getElementById('login-modal').classList.add('open'); }
+function closeLoginModal() { document.getElementById('login-modal').classList.remove('open'); }
+
+function doLogin() {
+    const user = document.getElementById('l-user').value;
+    const pass = document.getElementById('l-pass').value;
+    
+    fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: user, password: pass})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'success') {
+            location.reload(); // Refresh halaman setelah login
+        } else {
+            alert("Username/Password salah");
+        }
+    });
+}
+function openAuthModal() { document.getElementById('auth-modal').classList.add('open'); }
+function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); }
+
+// Fungsi pindah tampilan Login <-> Register
+function toggleAuth() {
+    const lForm = document.getElementById('login-form');
+    const rForm = document.getElementById('register-form');
+    if (lForm.style.display === 'none') {
+        lForm.style.display = 'block';
+        rForm.style.display = 'none';
+    } else {
+        lForm.style.display = 'none';
+        rForm.style.display = 'block';
+    }
+}
+
+// Fungsi Registrasi
+function doRegister() {
+    const data = {
+        full_name: document.getElementById('r-name').value,
+        username: document.getElementById('r-user').value,
+        email: document.getElementById('r-email').value,
+        phone: document.getElementById('r-phone').value,
+        password: document.getElementById('r-pass').value
+    };
+
+    if(!data.username || !data.password || !data.full_name) {
+        alert("Mohon lengkapi data!");
+        return;
+    }
+
+    fetch('/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'success') {
+            alert(data.message);
+            toggleAuth(); // Pindah ke form login setelah sukses
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => alert("Terjadi kesalahan sistem"));
+}
+
+// Fungsi Login (Pastikan ini ada)
+function doLogin() {
+    const user = document.getElementById('l-user').value;
+    const pass = document.getElementById('l-pass').value;
+    
+    fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: user, password: pass})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'success') {
+            location.reload(); 
+        } else {
+            alert("Username atau Password salah!");
+        }
+    });
+}
+
+function closeModal() {
+    document.getElementById('modal-bg').classList.remove('open');
+}
+  // Close modal on bg click
+  document.getElementById('modal-bg').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Init summary
+  updateSummary();
+</script>
+</body>
+</html>

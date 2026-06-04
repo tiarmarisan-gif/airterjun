@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Kulikap</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; background: #0a1628; color: white; padding: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #0f2140; }
+        th, td { padding: 15px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        th { background: #0e7c6e; }
+        .badge { padding: 5px 10px; border-radius: 4px; font-size: 12px; text-transform: capitalize; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #4ecdc4; text-decoration: none; }
+
+        /* Status Colors */
+        .badge.pending { background: #f39c12; color: white; }
+        .badge.lunas { background: #27ae60; color: white; }
+        
+        .btn-action { border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: opacity 0.2s; color: white; }
+        .btn-action:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Kembali ke Website</a>
+    <h1>Monitoring Reservasi</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Kode</th>
+                <th>Nama</th>
+                <th>Paket</th>
+                <th>Tanggal Trip</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in reservations %}
+            <tr id="row-{{ res.id }}">
+                <td>{{ res.booking_code }}</td>
+                <td>{{ res.full_name }}</td>
+                <td>{{ res.package_name }}</td>
+                <td>{{ res.trip_date }}</td>
+                <td>Rp {{ "{:,.0f}".format(res.total_price or 0).replace(",", ".") }}</td>
+                <td>
+                    <span class="badge {{ res.payment_status }}">
+                        {{ res.payment_status }}
+                    </span>
+                </td>
+                <td>
+                    <!-- Kita gunakan data-id agar editor tidak bingung -->
+                    {% if res.payment_status == 'pending' %}
+                    <button class="btn-action" 
+                            style="background:#2ecc71;" 
+                            data-id="{{ res.id }}" 
+                            onclick="handleUpdate(this)">Selesai</button>
+                    {% endif %}
+                    
+                    <button class="btn-action" 
+                            style="background:#e74c3c; margin-left:5px;" 
+                            data-id="{{ res.id }}" 
+                            onclick="handleDelete(this)">Hapus</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+    function handleUpdate(btn) {
+        const id = btn.getAttribute('data-id'); // Mengambil ID dari atribut HTML
+        if(!confirm("Tandai reservasi ini sebagai lunas?")) return;
+    
+        fetch('/api/reservations/update/' + id, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                alert("Status diperbarui!");
+                location.reload();
+            } else {
+                alert("Gagal update: " + data.message);
+            }
+        });
+    }
+    
+    function handleDelete(btn) {
+        const id = btn.getAttribute('data-id'); // Mengambil ID dari atribut HTML
+        if(!confirm("Yakin ingin menghapus data ini?")) return;
+    
+        fetch('/api/reservations/delete/' + id, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                const row = document.getElementById('row-' + id);
+                if(row) row.remove();
+                alert("Data dihapus!");
+            } else {
+                alert("Gagal menghapus!");
+            }
+        });
+    }
+    </script>
+</body>
+</html>
